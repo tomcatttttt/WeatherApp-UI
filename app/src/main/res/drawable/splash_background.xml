@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Білий фон для сплеш-екрану -->
+    <item android:drawable="@color/white" />
+
+    <!-- Зображення у центрі -->
+    <item>
+        <bitmap
+            android:gravity="center"
+            android:src="@drawable/group" /> <!-- Замініть `your_image` на свій логотип -->
+    </item>
+</layer-list>
