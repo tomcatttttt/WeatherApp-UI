@@ -6,7 +6,7 @@
 
     <fragment
         android:id="@+id/splashFragment"
-        android:name="com.nikita.weatherappui.SplashFragment"
+        android:name="com.nikita.weatherappui.ui.fragment.SplashFragment"
         android:label="splash_fragment"
         tools:layout="@layout/fragment_splash">
         <action
@@ -22,9 +22,14 @@
 
     <fragment
         android:id="@+id/mainFragment"
-        android:name="com.nikita.weatherappui.MainFragment"
+        android:name="com.nikita.weatherappui.ui.fragment.MainFragment"
         android:label="main_fragment"
-        tools:layout="@layout/fragment_main" >
+        tools:layout="@layout/fragment_main">
+        <!-- Аргумент для визначення джерела переходу -->
+        <argument
+            android:name="sourceScreen"
+            app:argType="string"
+            android:defaultValue="unknown" />
         <action
             android:id="@+id/action_mainFragment_to_searchLocationFragment"
             app:destination="@id/searchLocationFragment"
@@ -33,11 +38,12 @@
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right"/>
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
+
     <fragment
         android:id="@+id/searchLocationFragment"
-        android:name="com.nikita.weatherappui.SearchLocationFragment"
+        android:name="com.nikita.weatherappui.ui.fragment.SearchLocationFragment"
         android:label="fragment_search_location"
         tools:layout="@layout/fragment_search_location" />
 </navigation>

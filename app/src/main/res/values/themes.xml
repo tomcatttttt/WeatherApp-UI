@@ -1,10 +1,10 @@
 <resources>
     <style name="Theme.WeatherAppUI" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowIsTranslucent">true</item>
         <item name="windowSplashScreenBackground">@color/white</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/group</item>
         <item name="postSplashScreenTheme">@style/Theme.WeatherAppUI.Main</item>
     </style>
-
     <style name="Theme.WeatherAppUI.Main" parent="Theme.MaterialComponents.DayNight.NoActionBar">
     </style>
 

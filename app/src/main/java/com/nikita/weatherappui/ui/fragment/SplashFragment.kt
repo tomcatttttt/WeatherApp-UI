@@ -1,4 +1,4 @@
-package com.nikita.weatherappui
+package com.nikita.weatherappui.ui.fragment
 
 import android.os.Bundle
 import android.os.Handler
@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.nikita.weatherappui.R
 import com.nikita.weatherappui.databinding.FragmentSplashBinding
 
 class SplashFragment : Fragment() {
@@ -15,24 +16,40 @@ class SplashFragment : Fragment() {
     private var _binding: FragmentSplashBinding? = null
     private val binding get() = _binding!!
 
+    private val handler = Handler(Looper.getMainLooper())
+    private val navigateRunnable = Runnable {
+        if (isAdded && findNavController().currentDestination?.id == R.id.splashFragment) {
+            navigateToMainFragment()
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentSplashBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        delayNavigation()
+    }
 
-        Handler(Looper.getMainLooper()).postDelayed({
-            findNavController().navigate(R.id.action_splashFragment_to_mainFragment)
-        }, 3000)
+    private fun delayNavigation() {
+        handler.postDelayed(navigateRunnable, 3000)
+    }
+
+    private fun navigateToMainFragment() {
+        val action = SplashFragmentDirections.actionSplashFragmentToMainFragment(
+            sourceScreen = "splash"
+        )
+        findNavController().navigate(action)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        handler.removeCallbacks(navigateRunnable)
         _binding = null
     }
 }

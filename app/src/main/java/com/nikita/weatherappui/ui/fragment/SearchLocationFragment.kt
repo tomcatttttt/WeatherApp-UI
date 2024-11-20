@@ -1,4 +1,4 @@
-package com.nikita.weatherappui
+package com.nikita.weatherappui.ui.fragment
 
 import android.os.Bundle
 import android.view.LayoutInflater
