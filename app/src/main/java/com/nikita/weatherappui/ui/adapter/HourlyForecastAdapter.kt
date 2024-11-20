@@ -13,9 +13,11 @@ import com.nikita.weatherappui.model.HourlyForecast
 
 class HourlyForecastAdapter(
     private var forecastList: List<HourlyForecast>,
-    private var cityLocalTime: String
+    private var cityLocalTime: String,
+    private val onItemClick: (HourlyForecast) -> Unit
 ) : RecyclerView.Adapter<HourlyForecastAdapter.ViewHolder>() {
 
+    private var selectedPosition: Int = -1
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val container: LinearLayout = itemView.findViewById(R.id.hourlyItemContainer)
         val weatherIcon: ImageView = itemView.findViewById(R.id.weatherIcon)
@@ -36,13 +38,25 @@ class HourlyForecastAdapter(
         holder.hourText.text = forecast.time
         holder.tempText.text = "${forecast.temperature}°"
 
-        val currentCityHour = cityLocalTime.substringAfter(" ").substringBefore(":")
+        val currentCityHour = cityLocalTime.substringBefore(":")
         val forecastHour = forecast.time.substringBefore(":")
+        if (selectedPosition == -1 && currentCityHour == forecastHour) {
+            selectedPosition = position
+        }
 
-        if (currentCityHour == forecastHour) {
+        if (selectedPosition == position) {
             holder.container.setBackgroundResource(R.drawable.now_time_select)
         } else {
             holder.container.setBackgroundResource(android.R.color.transparent)
+        }
+
+        holder.container.setOnClickListener {
+            val previousPosition = selectedPosition
+            selectedPosition = position
+            notifyItemChanged(previousPosition)
+            notifyItemChanged(position)
+
+            onItemClick(forecast)
         }
     }
 
@@ -51,6 +65,7 @@ class HourlyForecastAdapter(
     fun updateData(newData: List<HourlyForecast>, updatedCityLocalTime: String) {
         forecastList = newData
         cityLocalTime = updatedCityLocalTime
+        selectedPosition = -1
         notifyDataSetChanged()
     }
 }

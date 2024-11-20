@@ -6,10 +6,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
 import com.google.android.gms.location.LocationServices
+import com.nikita.weatherappui.R
 import com.nikita.weatherappui.databinding.FragmentMainBinding
+import com.nikita.weatherappui.model.ForecastDay
 import com.nikita.weatherappui.model.HourlyForecast
 import com.nikita.weatherappui.model.NextDayForecast
 import com.nikita.weatherappui.ui.adapter.HourlyForecastAdapter
@@ -41,7 +44,7 @@ class MainFragment : Fragment() {
             if (isGranted) {
                 fetchUserLocation()
             } else {
-                fetchDefaultWeather()
+                handleError("Permission denied for location access.")
             }
         }
 
@@ -70,45 +73,60 @@ class MainFragment : Fragment() {
         setupRecyclerView()
         setupObservers()
         setupToggleForecastButton()
+        setupLocationClickListener()
     }
 
     private fun handleNavigationArguments() {
         val sourceScreen = arguments?.getString("sourceScreen") ?: "unknown"
-        if (sourceScreen == "splash") {
-            permissionHandler.checkAndRequestLocationPermission(
-                onPermissionGranted = { fetchUserLocation() },
-                onPermissionDenied = { fetchDefaultWeather() }
-            )
-        } else {
-            fetchDefaultWeather()
+        val locationType = arguments?.getString("locationType") ?: "default"
+        val customLocation = arguments?.getString("customLocation")
+
+        when {
+            sourceScreen == "search" && locationType == "custom" && !customLocation.isNullOrEmpty() -> {
+                fetchWeatherByCustomLocation(customLocation)
+            }
+            sourceScreen == "search" && locationType == "current" -> {
+                fetchUserLocation()
+            }
+            else -> {
+                permissionHandler.checkAndRequestLocationPermission(
+                    onPermissionGranted = { fetchUserLocation() },
+                    onPermissionDenied = { handleError("Permission denied for location access.") }
+                )
+            }
+        }
+    }
+
+    private fun setupLocationClickListener() {
+        binding.locationLayout.setOnClickListener {
+            val action = MainFragmentDirections.actionMainFragmentToSearchLocationFragment()
+            findNavController().navigate(action)
         }
     }
 
     private fun fetchUserLocation() {
         locationManager.fetchLocation(
             onSuccess = { location ->
-                fetchTodayWeather(lat = location.latitude.toString(), lon = location.longitude.toString())
-                fetchWeeklyForecast(lat = location.latitude.toString(), lon = location.longitude.toString())
+                fetchWeather(location.latitude.toString(), location.longitude.toString())
             },
-            onFailure = { fetchDefaultWeather() }
+            onFailure = { handleError("Failed to fetch user location.") }
         )
     }
 
-    private fun fetchDefaultWeather() {
-        fetchTodayWeather(lat = "50.4501", lon = "30.5234")
-        fetchWeeklyForecast(lat = "50.4501", lon = "30.5234")
-    }
-
-    private fun fetchTodayWeather(lat: String, lon: String) {
+    private fun fetchWeather(lat: String, lon: String) {
         weatherViewModel.fetchTodayWeather(lat, lon)
-    }
-
-    private fun fetchWeeklyForecast(lat: String, lon: String) {
         weatherViewModel.fetchForecast(lat, lon, days = 7)
     }
 
+    private fun fetchWeatherByCustomLocation(location: String) {
+        weatherViewModel.fetchTodayWeather(location, "")
+        weatherViewModel.fetchForecast(location, "", days = 7)
+    }
+
     private fun setupRecyclerView() {
-        hourlyForecastAdapter = HourlyForecastAdapter(emptyList(), cityTime)
+        hourlyForecastAdapter = HourlyForecastAdapter(emptyList(), cityTime) { forecast ->
+            updateUIForSelectedHour(forecast) // Handle item click
+        }
         binding.includeDailyForecast.recyclerViewHourlyForecast.apply {
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
             adapter = hourlyForecastAdapter
@@ -119,6 +137,14 @@ class MainFragment : Fragment() {
             layoutManager = LinearLayoutManager(context)
             adapter = nextDaysForecastAdapter
         }
+    }
+
+    private fun updateUIForSelectedHour(forecast: HourlyForecast) {
+        binding.temperatureText.text = "${forecast.temperature}°"
+        binding.precipitationInfo.text = forecast.time
+        binding.weatherIcon.load(forecast.iconUrl)
+
+
     }
 
     private fun setupToggleForecastButton() {
@@ -150,7 +176,6 @@ class MainFragment : Fragment() {
                 binding.locationText.text = weather.location.name
                 binding.temperatureText.text = "${weather.current.tempC.roundToInt()}°"
                 binding.precipitationInfo.text = weather.current.condition.text
-                binding.weatherIcon.load("https:${weather.current.condition.icon}")
 
                 cityTime = weather.location.localtime.substringAfter(" ")
                 binding.includeDailyForecast.dateText.text = DateUtils.formatDate(weather.location.localtime)
@@ -159,6 +184,7 @@ class MainFragment : Fragment() {
                 forecastToday?.let {
                     binding.maxMinTemp.text =
                         "Max.: ${it.day.maxTempC.roundToInt()}° Min.: ${it.day.minTempC.roundToInt()}°"
+                    updateWeatherIcon(it)
                 }
 
                 val hourlyForecast = forecastToday?.hour?.map {
@@ -177,10 +203,7 @@ class MainFragment : Fragment() {
                     windSpeed = weather.current.windKph
                 )
             } else {
-                binding.errorMessageText.apply {
-                    visibility = View.VISIBLE
-                    text = "Failed to load today's weather data."
-                }
+                handleError("Failed to load today's weather data.")
             }
         }
 
@@ -196,18 +219,12 @@ class MainFragment : Fragment() {
                 }
                 nextDaysForecastAdapter.updateData(nextDaysForecast)
             } else {
-                binding.errorMessageText.apply {
-                    visibility = View.VISIBLE
-                    text = "Failed to load weekly forecast data."
-                }
+                handleError("Failed to load weekly forecast data.")
             }
         }
 
         weatherViewModel.errorMessage.observe(viewLifecycleOwner) { error ->
-            binding.errorMessageText.apply {
-                text = error
-                visibility = View.VISIBLE
-            }
+            handleError(error)
         }
     }
 
@@ -221,10 +238,31 @@ class MainFragment : Fragment() {
         }
     }
 
+    private fun updateWeatherIcon(forecastDay: ForecastDay) {
+        val currentHour = DateUtils.getCurrentHour()
+        val closestHour = forecastDay.hour.minByOrNull {
+            val hour = it.time.substringAfter(" ").split(":")[0].toInt()
+            Math.abs(hour - currentHour)
+        }
+
+        closestHour?.let {
+            binding.weatherIcon.load("https:${it.condition.icon}")
+        } ?: run {
+            binding.weatherIcon.setImageResource(R.drawable.sun_cloud_mid_rain)
+        }
+    }
+
     private fun updateWeatherStats(precipitation: Double, humidity: Int, windSpeed: Double) {
         binding.textPrecipitation.text = "${precipitation.roundToInt()}%"
         binding.textHumidity.text = "$humidity%"
         binding.textWind.text = "${windSpeed.roundToInt()} km/h"
+    }
+
+    private fun handleError(message: String) {
+        binding.errorMessageText.apply {
+            text = message
+            visibility = View.VISIBLE
+        }
     }
 
     override fun onDestroyView() {

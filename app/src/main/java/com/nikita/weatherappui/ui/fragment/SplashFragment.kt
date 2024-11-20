@@ -42,7 +42,9 @@ class SplashFragment : Fragment() {
 
     private fun navigateToMainFragment() {
         val action = SplashFragmentDirections.actionSplashFragmentToMainFragment(
-            sourceScreen = "splash"
+            sourceScreen = "splash",
+            locationType = "default",
+            customLocation = null
         )
         findNavController().navigate(action)
     }
