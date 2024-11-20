@@ -1,11 +1,17 @@
 <resources>
     <style name="Theme.WeatherAppUI" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="android:windowIsTranslucent">true</item>
         <item name="windowSplashScreenBackground">@color/white</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/group</item>
         <item name="postSplashScreenTheme">@style/Theme.WeatherAppUI.Main</item>
     </style>
 
     <style name="Theme.WeatherAppUI.Main" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    </style>
+
+    <style name="ButtonImageStyle" parent="Widget.MaterialComponents.Button">
+        <item name="background">@drawable/button_next</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:padding">8dp</item>
     </style>
 </resources>

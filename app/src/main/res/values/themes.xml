@@ -7,4 +7,19 @@
 
     <style name="Theme.WeatherAppUI.Main" parent="Theme.MaterialComponents.DayNight.NoActionBar">
     </style>
+
+    <style name="ButtonImageStyle" parent="Widget.MaterialComponents.Button">
+        <item name="android:backgroundTint">@color/button_background_color</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">@font/inter</item>
+        <item name="android:padding">8dp</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Button.Rounded</item>
+    </style>
+
+    <style name="ShapeAppearance.Button.Rounded" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">20dp</item>
+    </style>
+
 </resources>

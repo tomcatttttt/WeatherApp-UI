@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">WeatherApp UI</string>
+    <string name="location_icon">Location Icon</string>
+    <string name="weather_icon">Weather Icon</string>
+    <string name="humidity_icon">Humidity Icon</string>
+    <string name="precipitation_icon">Precipitation Icon</string>
+    <string name="wind_icon">Wind Icon</string>
+    <string name="next_forecast_button">Next Forecast</string>
+    <string name="today_forecast">Today</string>
+    <string name="welcome_message">Welcome to the Weather App!</string>
 </resources>
