@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_search">
+
+    <LinearLayout
+        android:id="@+id/fieldsContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginHorizontal="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="32dp">
+
+        <LinearLayout
+            android:id="@+id/currentLocationContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/currentLocationInput"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="1"
+                android:text="Get current location"
+                android:backgroundTint="@color/grey"
+                android:background="@drawable/rounded_input"
+                android:padding="12dp"
+                android:paddingStart="36dp"
+                android:fontFamily="@font/inter"
+                android:textColor="@android:color/black"
+                android:layout_marginEnd="8dp"
+                android:alpha="0.7"
+                android:gravity="center_vertical"
+                android:enabled="false"
+                android:focusable="false" />
+
+            <Button
+                android:id="@+id/checkCurrentLocation"
+                android:layout_width="80dp"
+                android:layout_height="50dp"
+                android:text="check"
+                style="@style/ButtonImageStyleSearch" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/searchLocationContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <EditText
+                android:id="@+id/searchInput"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="1"
+                android:hint="Search location"
+                android:backgroundTint="@color/grey"
+                android:background="@drawable/rounded_input"
+                android:drawableStart="@drawable/glass"
+                android:drawablePadding="8dp"
+                android:padding="12dp"
+                android:fontFamily="@font/inter"
+                android:textColor="@android:color/black"
+                android:textColorHint="@color/grey"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/checkSearchLocation"
+                android:layout_width="80dp"
+                android:layout_height="50dp"
+                android:text="check"
+                style="@style/ButtonImageStyleSearch" />
+        </LinearLayout>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

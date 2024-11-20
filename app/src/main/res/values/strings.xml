@@ -8,4 +8,6 @@
     <string name="next_forecast_button">Next Forecast</string>
     <string name="today_forecast">Today</string>
     <string name="welcome_message">Welcome to the Weather App!</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

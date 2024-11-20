@@ -218,10 +218,10 @@
                 android:gravity="start" />
 
             <ImageView
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:scaleX="2"
-                android:scaleY="2"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:scaleX="1.5"
+                android:scaleY="1.5"
                 android:src="@drawable/ic_big_rain_drops"
                 android:contentDescription="@string/weather_icon"
                 android:layout_marginEnd="16dp" />
@@ -275,10 +275,10 @@
                 android:gravity="start" />
 
             <ImageView
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:scaleX="2"
-                android:scaleY="2"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:scaleX="1.5"
+                android:scaleY="1.5"
                 android:src="@drawable/ic_loud_zap"
                 android:contentDescription="@string/weather_icon"
                 android:layout_marginEnd="16dp" />
@@ -332,10 +332,10 @@
                 android:gravity="start" />
 
             <ImageView
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:scaleX="2"
-                android:scaleY="2"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:scaleX="1.5"
+                android:scaleY="1.5"
                 android:src="@drawable/sun_cloud_mid_rain"
                 android:contentDescription="@string/weather_icon"
                 android:layout_marginEnd="16dp" />
