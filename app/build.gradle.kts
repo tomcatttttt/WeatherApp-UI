@@ -4,7 +4,7 @@ import java.util.Properties
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("androidx.navigation.safeargs.kotlin") // Додаємо плагін без alias
+    id("androidx.navigation.safeargs.kotlin")
 }
 
 val localProperties = Properties()
@@ -69,4 +69,5 @@ dependencies {
     implementation("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2")
     implementation("com.squareup.okhttp3:logging-interceptor:4.10.0")
     implementation("androidx.recyclerview:recyclerview:1.2.1")
+
 }

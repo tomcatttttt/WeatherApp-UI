@@ -10,4 +10,11 @@
     <string name="welcome_message">Welcome to the Weather App!</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="next_forecast">Next Forecast</string>
+    <string name="home">Home</string>
+    <string name="failed_to_load_today_s_weather_data">Failed to load today\'s weather data.</string>
+    <string name="failed_to_load_weekly_forecast_data">Failed to load weekly forecast data.</string>
+    <string name="permission_denied_for_location_access">Permission denied for location access.</string>
+    <string name="permission_denied_for_location_acces">Permission denied for location access.</string>
+    <string name="please_enter_a_location_to_search">Please enter a location to search</string>
 </resources>

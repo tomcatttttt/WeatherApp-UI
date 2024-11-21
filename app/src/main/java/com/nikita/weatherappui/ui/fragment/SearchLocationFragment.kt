@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.nikita.weatherappui.R
 import com.nikita.weatherappui.databinding.FragmentSearchLocationBinding
 
 class SearchLocationFragment : Fragment() {
@@ -48,7 +49,7 @@ class SearchLocationFragment : Fragment() {
             } else {
                 Toast.makeText(
                     requireContext(),
-                    "Please enter a location to search",
+                    getString(R.string.please_enter_a_location_to_search),
                     Toast.LENGTH_SHORT
                 ).show()
             }

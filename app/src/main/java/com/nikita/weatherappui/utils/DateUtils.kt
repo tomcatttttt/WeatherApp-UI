@@ -8,7 +8,7 @@ object DateUtils {
     fun formatDate(inputDate: String): String {
         return try {
             val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            val outputFormat = SimpleDateFormat("EEEE, MMM dd", Locale.getDefault())
+            val outputFormat = SimpleDateFormat("EEE, MMM dd", Locale.getDefault())
             val date = inputFormat.parse(inputDate) ?: throw IllegalArgumentException("Invalid date format")
             outputFormat.format(date)
         } catch (e: Exception) {

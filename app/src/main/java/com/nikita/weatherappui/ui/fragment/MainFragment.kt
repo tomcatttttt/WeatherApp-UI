@@ -1,6 +1,14 @@
 package com.nikita.weatherappui.ui.fragment
 
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -39,12 +47,16 @@ class MainFragment : Fragment() {
     private var cityTime: String = ""
     private var isNextForecastVisible = false
 
+    private val internetCheckHandler = Handler()
+    private var internetCheckRunnable: Runnable = Runnable {}
+    private var isFetchingData = false
+
     private val requestLocationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
                 fetchUserLocation()
             } else {
-                handleError("Permission denied for location access.")
+                showError(getString(R.string.permission_denied_for_location_acces))
             }
         }
 
@@ -55,12 +67,93 @@ class MainFragment : Fragment() {
         _binding = FragmentMainBinding.inflate(inflater, container, false)
         return binding.root
     }
-
+    override fun onResume() {
+        super.onResume()
+        if (isInternetAvailable()) {
+            if (isGpsPermissionGranted()) {
+                hideGpsMessage()
+                showLoadingState()
+                setupDependencies()
+                setupUI()
+                handleNavigationArguments()
+            } else {
+                handleGpsPermissionDenied()
+            }
+        } else {
+            showNoInternetMessage()
+            startInternetCheckLoop()
+        }
+    }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupDependencies()
-        setupUI()
-        handleNavigationArguments()
+
+        setupEnableGpsButton()
+
+        if (isInternetAvailable()) {
+            if (isGpsPermissionGranted()) {
+                showLoadingState()
+                setupDependencies()
+                setupUI()
+                handleNavigationArguments()
+            } else {
+                handleGpsPermissionDenied()
+            }
+        } else {
+            showNoInternetMessage()
+            startInternetCheckLoop()
+        }
+    }
+    private fun hideGpsMessage() {
+        binding.gpsRequiredMessage.visibility = View.GONE
+        binding.enableGpsButton.visibility = View.GONE
+    }
+    private fun isInternetAvailable(): Boolean {
+        val connectivityManager =
+            requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
+    }
+
+    private fun isGpsPermissionGranted(): Boolean {
+        val permission = android.Manifest.permission.ACCESS_FINE_LOCATION
+        return requireContext().checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun showNoInternetMessage() {
+        AnimationHelper.animateVisibility(binding.noInternetMessage, View.VISIBLE)
+        AnimationHelper.animateVisibility(binding.noInternetProgressBar, View.VISIBLE)
+        AnimationHelper.animateVisibility(binding.mainContent, View.GONE)
+    }
+
+    private fun showMainContent() {
+        AnimationHelper.animateVisibility(binding.noInternetMessage, View.GONE)
+        AnimationHelper.animateVisibility(binding.noInternetProgressBar, View.GONE)
+        AnimationHelper.animateVisibility(binding.mainContent, View.VISIBLE)
+    }
+
+    private fun showLoadingState() {
+        binding.noInternetMessage.visibility = View.GONE
+        binding.noInternetProgressBar.visibility = View.VISIBLE
+        binding.mainContent.visibility = View.GONE
+    }
+
+    private fun startInternetCheckLoop() {
+        internetCheckRunnable = Runnable {
+            if (isInternetAvailable()) {
+                showLoadingState()
+                internetCheckHandler.removeCallbacks(internetCheckRunnable)
+                setupDependencies()
+                setupUI()
+                handleNavigationArguments()
+            } else {
+                binding.noInternetMessage.visibility = View.VISIBLE
+                binding.noInternetProgressBar.visibility = View.VISIBLE
+                internetCheckHandler.postDelayed(internetCheckRunnable, 2000)
+            }
+        }
+        internetCheckHandler.post(internetCheckRunnable)
     }
 
     private fun setupDependencies() {
@@ -91,7 +184,7 @@ class MainFragment : Fragment() {
             else -> {
                 permissionHandler.checkAndRequestLocationPermission(
                     onPermissionGranted = { fetchUserLocation() },
-                    onPermissionDenied = { handleError("Permission denied for location access.") }
+                    onPermissionDenied = { showError(getString(R.string.permission_denied_for_location_access)) }
                 )
             }
         }
@@ -109,23 +202,25 @@ class MainFragment : Fragment() {
             onSuccess = { location ->
                 fetchWeather(location.latitude.toString(), location.longitude.toString())
             },
-            onFailure = { handleError("Failed to fetch user location.") }
+            onFailure = { showError("Failed to fetch user location.") }
         )
     }
 
     private fun fetchWeather(lat: String, lon: String) {
+        isFetchingData = true
         weatherViewModel.fetchTodayWeather(lat, lon)
         weatherViewModel.fetchForecast(lat, lon, days = 7)
     }
 
     private fun fetchWeatherByCustomLocation(location: String) {
+        isFetchingData = true
         weatherViewModel.fetchTodayWeather(location, "")
         weatherViewModel.fetchForecast(location, "", days = 7)
     }
 
     private fun setupRecyclerView() {
         hourlyForecastAdapter = HourlyForecastAdapter(emptyList(), cityTime) { forecast ->
-            updateUIForSelectedHour(forecast) // Handle item click
+            updateUIForSelectedHour(forecast)
         }
         binding.includeDailyForecast.recyclerViewHourlyForecast.apply {
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
@@ -143,8 +238,6 @@ class MainFragment : Fragment() {
         binding.temperatureText.text = "${forecast.temperature}°"
         binding.precipitationInfo.text = forecast.time
         binding.weatherIcon.load(forecast.iconUrl)
-
-
     }
 
     private fun setupToggleForecastButton() {
@@ -160,11 +253,11 @@ class MainFragment : Fragment() {
         if (isNextForecastVisible) {
             AnimationHelper.animateVisibility(todayForecastContainer, View.VISIBLE)
             AnimationHelper.animateVisibility(nextDaysForecastContainer, View.GONE)
-            binding.nextForecastButton.text = "Next Forecast"
+            binding.nextForecastButton.text = getString(R.string.next_forecast)
         } else {
             AnimationHelper.animateVisibility(todayForecastContainer, View.GONE)
             AnimationHelper.animateVisibility(nextDaysForecastContainer, View.VISIBLE)
-            binding.nextForecastButton.text = "Home"
+            binding.nextForecastButton.text = getString(R.string.home)
         }
 
         isNextForecastVisible = !isNextForecastVisible
@@ -202,8 +295,12 @@ class MainFragment : Fragment() {
                     humidity = weather.current.humidity,
                     windSpeed = weather.current.windKph
                 )
+                if (isFetchingData) {
+                    isFetchingData = false
+                    showMainContent()
+                }
             } else {
-                handleError("Failed to load today's weather data.")
+                showError(getString(R.string.failed_to_load_today_s_weather_data))
             }
         }
 
@@ -219,15 +316,24 @@ class MainFragment : Fragment() {
                 }
                 nextDaysForecastAdapter.updateData(nextDaysForecast)
             } else {
-                handleError("Failed to load weekly forecast data.")
+                showError(getString(R.string.failed_to_load_weekly_forecast_data))
+                navigateBackToSearchWithDelay()
             }
         }
 
         weatherViewModel.errorMessage.observe(viewLifecycleOwner) { error ->
-            handleError(error)
+            showError(error)
+            navigateBackToSearchWithDelay()
         }
     }
-
+    private fun navigateBackToSearchWithDelay() {
+        Handler().postDelayed({
+            if (isAdded && findNavController().currentDestination?.id == R.id.mainFragment) {
+                val action = MainFragmentDirections.actionMainFragmentToSearchLocationFragment()
+                findNavController().navigate(action)
+            }
+        }, 2000)
+    }
     private fun scrollToCurrentHour(hourlyForecast: List<HourlyForecast>) {
         val currentHour = DateUtils.getCurrentHour()
         val position = hourlyForecast.indexOfFirst {
@@ -257,16 +363,34 @@ class MainFragment : Fragment() {
         binding.textHumidity.text = "$humidity%"
         binding.textWind.text = "${windSpeed.roundToInt()} km/h"
     }
+    private fun handleGpsPermissionDenied() {
+        binding.gpsRequiredMessage.visibility = View.VISIBLE
+        binding.enableGpsButton.visibility = View.VISIBLE
+        binding.mainContent.visibility = View.GONE
+        binding.noInternetMessage.visibility = View.GONE
+        binding.noInternetProgressBar.visibility = View.GONE
+    }
 
-    private fun handleError(message: String) {
-        binding.errorMessageText.apply {
+    private fun setupEnableGpsButton() {
+        binding.enableGpsButton.setOnClickListener {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.fromParts("package", requireContext().packageName, null)
+            }
+            startActivity(intent)
+        }
+    }
+    private fun showError(message: String) {
+        binding.noInternetMessage.apply {
             text = message
             visibility = View.VISIBLE
         }
+        binding.noInternetProgressBar.visibility = View.GONE
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+
+        internetCheckHandler.removeCallbacks(internetCheckRunnable)
     }
 }
