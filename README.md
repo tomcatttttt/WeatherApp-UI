@@ -1,4 +1,5 @@
 # WeatherAppUI
+[Watch the demo video](https://youtu.be/d6CVMLAEpSA)
 
 WeatherAppUI is a simple and feature-rich weather application for Android, developed in Kotlin. The app provides users with accurate weather updates and ensures a smooth experience with modern architecture and libraries.
 
